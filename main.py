@@ -123,7 +123,7 @@ def main() -> None:
     duration = float(duration)
   
   # generate indices for the sounds
-  indices = list(islice(gap_random_uniform(0, duration-max(durations), 10), num_sounds))
+  indices = list(islice(gap_random_uniform(0, duration-max(durations), max(durations)+1), num_sounds))
   indices.sort()
 
   # setup loop vars
