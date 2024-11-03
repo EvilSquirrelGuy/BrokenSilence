@@ -34,3 +34,7 @@ The following file extensions are supported (i.e. read by the script, it uses ff
 * ".flac"
 * ".wav"
 * ".opus"
+
+## Examples
+
+* [1 hour of silence occasionally interrupted by zhongli saying "osmanthus wine"](https://www.youtube.com/watch?v=NOtU77L7RqQ)
