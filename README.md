@@ -37,4 +37,4 @@ The following file extensions are supported (i.e. read by the script, it uses ff
 
 ## Examples
 
-* [1 hour of silence occasionally interrupted by zhongli saying "osmanthus wine"](https://www.youtube.com/watch?v=NOtU77L7RqQ)
+* [1 hour of silence broken up by various sounds (playlist)](https://youtube.com/playlist?list=PLYwid3dI6PP2Sy9DUtMoj5ZpLJqD88D4p)
