@@ -163,3 +163,7 @@ cython_debug/
 
 .DS_Store
 *.ogg
+*.m4a
+*.mp4
+*.ogg
+*.opus

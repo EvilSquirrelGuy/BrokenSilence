@@ -15,6 +15,15 @@ import shutil
 import librosa
 
 AUDIO_FILE_EXTENSIONS = (".mp3", ".m4a", ".ogg", ".flac", ".wav", ".opus")
+IMAGE_FILE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp")
+
+# setup encoders
+if sys.platform == "darwin":
+  AUDIO_ENC = "aac_at"
+  VIDEO_ENC = "hevc_videotoolbox"
+else:
+  AUDIO_ENC = "aac"
+  VIDEO_ENC = "libx264"
 
 # https://stackoverflow.com/questions/75813482/generate-random-numbers-in-a-range-while-keeping-a-minimum-distance-between-valu
 def gap_random_uniform(low, high, gap):
@@ -141,13 +150,50 @@ def main() -> None:
   print(f"{Fore.YELLOW}{Style.NORMAL}==>  {Style.BRIGHT}Concatenating {len(result_files)} files...")
   stream = ffmpeg.concat(*[ffmpeg.input(rf) for rf in result_files], a=1, n=2, v=0)
   file_id = [chr(random.choice([0x61, 0x41])+random.randint(0,25)) for _ in range(6)]
-  outfile = f"{num_sounds}_{int(duration)}s_silence_{''.join(file_id)}.ogg"
-  stream = stream.output(outfile, acodec="libopus", audio_bitrate=160_000)
+  outfile = f"{num_sounds}_{int(duration)}s_silence_{''.join(file_id)}"
+  stream = stream.output(f"{outfile}.m4a", acodec=AUDIO_ENC, audio_bitrate=192_000)
   stream.run(quiet=True)
-  print(f"{Fore.YELLOW}{Style.NORMAL}==>  {Style.BRIGHT}Successfully created file: `{outfile}`\n")
+  print(f"{Fore.YELLOW}{Style.NORMAL}==>  {Style.BRIGHT}Successfully created file: `{outfile}.m4a`\n")
 
   print(f"{Fore.BLUE}{Style.DIM}==>  {Style.NORMAL}Cleaning temporary files...")
   shutil.rmtree(".tmp")
+
+  print(f"\n\n{Style.BRIGHT}{Fore.GREEN}Time to generate a video!{Style.RESET_ALL}")
+  print(f"{Fore.GREEN}Before we begin, please place the image you would like to use into the `images` directory.")
+  print(f"You will then be prompted to select an image in the folder and the script will generate a vide for you!")
+  print(f"{Fore.RED}{Style.BRIGHT}WARNING: {Style.RESET_ALL}{Fore.RED}This process will take a long time (10-20 minutes for a 1h video), so go grab a cup of tea while you wait.\n{Style.RESET_ALL}")
+
+  input(f"\n{Style.DIM}Press Enter to continue...{Style.RESET_ALL}")
+  print()
+
+  images = [os.path.join("images", img) for img in os.listdir("images")]
+
+  for i, img in enumerate(images):
+    print(f"  {i+1: 2}) {img}")
+  print()
+
+  vid_img = int(input(f"{Style.BRIGHT}{Fore.GREEN}Select image from list: {Style.RESET_ALL}"))
+  print()
+
+  img = images[vid_img-1]
+
+  print(f"{Fore.YELLOW}{Style.NORMAL}==>  {Style.BRIGHT}Generating code for video...")
+
+  img_stream = ffmpeg.input(img, loop=1)
+  audio_stream = ffmpeg.input(f"{outfile}.m4a")
+
+
+  img_stream = ffmpeg.filter(img_stream, "scale", "1920", "1080", force_original_aspect_ratio="decrease")
+  img_stream = ffmpeg.filter(img_stream, "pad", "1920", "1080", "-1", "-1")
+  
+  vid_stream = ffmpeg.output(img_stream, audio_stream, f"{outfile}.mp4", acodec="copy", vcodec=VIDEO_ENC, pix_fmt="yuv420p", shortest=None)
+
+
+  vid_stream.run()
+  print(f"{Fore.YELLOW}{Style.NORMAL}==>  {Style.BRIGHT}Successfully created file: `{outfile}.mp4`\n")
+
+
+  # ffmpeg -loop 1 -i deepfried_zhongli.png -i 32_3600s_silence_FoiBzV.ogg -c:v hevc_videotoolbox -tune stillimage -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:-1:-1" -c:a aac_at -b:a 192k -pix_fmt yuv420p -shortest 1hr_silence_with_osmanthus_wine.mov
 
 
 if __name__ == "__main__":
